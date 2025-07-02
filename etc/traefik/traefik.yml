@@ -2,6 +2,7 @@ api:
   ##
   # Enable the API in insecure mode, which means that the API will be available
   # directly on the entryPoint named `traefik`, on path `/api`.
+  #
   insecure: true
 
   ##
@@ -38,8 +39,10 @@ entryPoints:
     #
     # If both TCP and UDP are wanted for the same port, two entryPoints
     # definitions are needed.
+    #
     address: ":80"
 
+    ##
     # The `asDefault` option marks the EntryPoint to be in the list of default
     # EntryPoints.
     #
@@ -56,6 +59,10 @@ entryPoints:
     #
     http:
       redirections:
+        ##
+        # Enable (permanent) redirecting of all incoming requests on this entry
+        # point to the "secureweb" entry point.
+        #
         entryPoint:
           to: EntryPoint-WebSecure
           scheme: https
@@ -64,7 +71,7 @@ entryPoints:
     # Port on which to listen for incoming HTTPS connections.
     address: ":443"
 
-    # mrks the EntryPoint to be in the list of default EntryPoints.
+    # Marks the EntryPoint to be in the list of default EntryPoints.
     #noinspection YAMLSchemaValidation
     asDefault: true
 
@@ -96,14 +103,44 @@ entryPoints:
 #
 # The _providers_ are infrastructure components, whether orchestrators,
 # container engines, cloud providers, or key-value stores. The idea is that
-# Traefik queries the provider APIs in order to find relevant information about
+# Traefik queries the provider APIs to find relevant information about
 # routing, and when Traefik detects a change, it dynamically updates the routes.
 #
 providers:
   ##
   # Enable the Docker provider.
+  #
   docker:
+    ##
+    # Expose containers by default through Traefik.
+    #
+    # If set to `false`, containers that do not have a `traefik.enable=true`
+    # label are ignored from the resulting routing configuration.
+    #
+    # Optional, Default=true
+    #
     exposedByDefault: false
+
+    ##
+    # Defines a default docker network to use for connections to all containers.
+    #
+    # This option can be overridden on a per-container basis with the
+    # `traefik.docker.network` label.
+    #
+    # Optional, Default=""
+    #
+    network: traefik
+
+    ##
+    # If this parameter is set to `true`, any "servers load balancer" defined
+    # for Docker containers is created regardless of the "healthiness" of the
+    # corresponding containers.
+    #
+    # It also then stays alive and responsive even at times when it becomes
+    # empty, i.e. when all its children containers become unhealthy. This
+    # results in `503` HTTP responses instead of `404` ones, in the above cases.
+    #
+    allowEmptyServices: true
 
 ##
 # Traefik requires you to define "Certificate Resolvers" in the static
