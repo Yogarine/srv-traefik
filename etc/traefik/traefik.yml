@@ -1,0 +1,109 @@
+api:
+  ##
+  # Enable the API in insecure mode, which means that the API will be available
+  # directly on the entryPoint named `traefik`, on path `/api`.
+  insecure: true
+
+  ##
+  # Disable dashboard ad.
+  #
+  disableDashboardAd: true
+
+##
+# EntryPoints are the network entry points into Traefik.
+#
+# They define the port which will receive the packets, and whether to listen for
+# TCP or UDP.
+#
+entryPoints:
+  EntryPoint-Web:
+    ##
+    # The address defines the port, and optionally the hostname, on which to
+    # listen for incoming connections and packets.
+    #
+    # It also defines the protocol to use (TCP or UDP). If no protocol is
+    # specified, the default is TCP. The format is:
+    #
+    #     [host]:port[/tcp|/udp]
+    #
+    # If both TCP and UDP are wanted for the same port, two entryPoints
+    # definitions are needed.
+    address: ":80"
+
+    # The `asDefault` option marks the EntryPoint to be in the list of default
+    # EntryPoints.
+    #
+    # EntryPoints in this list are used (by default) on HTTP and TCP routers
+    # that do not define their own EntryPoints option.
+    #
+    # Optional, Default=false
+    #
+    #noinspection YAMLSchemaValidation
+    asDefault: true
+
+    ##
+    # Options that will apply only to HTTP routing.
+    #
+    http:
+      redirections:
+        entryPoint:
+          to: EntryPoint-WebSecure
+          scheme: https
+
+  EntryPoint-WebSecure:
+    # Port on which to listen for incoming HTTPS connections.
+    address: ":443"
+
+    # mrks the EntryPoint to be in the list of default EntryPoints.
+    #noinspection YAMLSchemaValidation
+    asDefault: true
+
+    ##
+    # Options that will apply only to HTTP routing.
+    #
+    http:
+      ##
+      # TLS configuration applied to routers associated with this entry point.
+      #
+      tls:
+        ##
+        # If `certResolver` is defined, Traefik will try to generate
+        # certificates based on router's `Host` & `HostSNI` rules.
+        #
+        certResolver: CertResolver-LetsEncrypt
+
+  EntryPoint-Minecraft-Java:
+    address: ":25565"
+
+  EntryPoint-Minecraft-Bedrock-IPv4:
+    address: ":19132/udp"
+
+  EntryPoint-Minecraft-Bedrock-IPv6:
+    address: ":19133/udp"
+
+##
+# Configuration discovery in Traefik is achieved through _Providers_.
+#
+# The _providers_ are infrastructure components, whether orchestrators,
+# container engines, cloud providers, or key-value stores. The idea is that
+# Traefik queries the provider APIs in order to find relevant information about
+# routing, and when Traefik detects a change, it dynamically updates the routes.
+#
+providers:
+  ##
+  # Enable the Docker provider.
+  docker:
+    exposedByDefault: false
+
+##
+# Traefik requires you to define "Certificate Resolvers" in the static
+# configuration, which are responsible for retrieving certificates from an ACME
+# server.
+#
+certificatesResolvers:
+
+  CertResolver-LetsEncrypt:
+    acme: # Enable ACME (Let's Encrypt): automatic SSL.
+      email: "me@yogarine.com"
+      storage: "/etc/traefik/certs/acme.json"
+      tlsChallenge: {}
