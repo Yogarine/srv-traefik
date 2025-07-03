@@ -84,10 +84,10 @@ entryPoints:
       #
       tls:
         ##
-        # If `certResolver` is defined, Traefik will try to generate
+        # If a `certResolver` is defined, Traefik will try to generate
         # certificates based on router's `Host` & `HostSNI` rules.
         #
-        certResolver: CertResolver-LetsEncrypt
+        certResolver: CertResolver-Acme-TransIP
 
   EntryPoint-Minecraft-Java:
     address: ":25565"
@@ -149,8 +149,22 @@ providers:
 #
 certificatesResolvers:
 
-  CertResolver-LetsEncrypt:
-    acme: # Enable ACME (Let's Encrypt): automatic SSL.
+  CertResolver-Acme-TlsChallenge:
+    acme:
       email: "me@yogarine.com"
       storage: "/etc/traefik/certs/acme.json"
       tlsChallenge: {}
+
+  CertResolver-Acme-HttpChallenge:
+    acme:
+      email: "me@yogarine.com"
+      storage: "/etc/traefik/certs/acme.json"
+      httpChallenge:
+        entryPoint: EntryPoint-Web
+
+  CertResolver-Acme-TransIP:
+    acme:
+      email: "me@yogarine.com"
+      storage: "/etc/traefik/certs/acme.json"
+      dnsChallenge:
+        provider: transip
